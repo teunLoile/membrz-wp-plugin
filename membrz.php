@@ -20,6 +20,39 @@
     add_menu_page('Membrz Plugin', 'Membrz Plugin', 'administrator', 'mbr_admin', 'mb_options_page_html');
  }
 
+ //TODO: remove after testing
+ function mb_create_post_type(){
+    register_post_type('mb_event', array(
+        'public' => true,
+        'show_ui' => true,
+        'show_in_menu' => 'mbr_admin',
+        'show_in_admin_bar ' => true,
+    ));
+ }
+
+ function mb_add_meta_box(){
+    add_meta_box('mb_box_id', 'Events metabox', 'mb_event_meta_html', 'mb_event');
+ }
+
+function mb_event_meta_html($post){
+    $value = get_post_meta($post->ID, 'name');
+    ?> 
+        <div><h3><?=$value?></h3></div>
+    <?php
+}
+
+ add_action('add_meta_boxes', 'mb_add_meta_box');
+
+function mb_register_custom_post_type_menu(){
+    add_submenu_page('edit.php?=mb_event', 'Events', 'Submenu', 'manage_options', 'events-submenu', 'events_html');
+}
+
+add_action('admin_menu', 'mb_register_custom_post_type_menu');
+
+function events_html(){
+    echo "<h1> Test </h1>";
+}
+
  function mb_activate(){
     add_option('mb_url_congig');
  }
@@ -36,24 +69,41 @@ if($_POST && $url_location = $_POST['mb_dashboard_host']){
     update_option('mb_url_config', $url_location);  
 }
 
-if($url = get_option('mb_url_config')){
-    $data = ['collection' => 'Membrz'];
+add_action('rest_api_init', function() {
+    register_rest_route('membrz-post-endpoint', '/membrz-post-endpoint', array(
+        'methods' => 'POST',
+        'callback' => 'handle_membrz_post',
+        'permission_callback' => function () {
+            // Allow requests from any origin
+            //TODO implement it so that it only allows $host 
+            header("Access-Control-Allow-Origin: *");
+            return true;
+        },
+    )); 
+});
+add_action('rest_api_init', function() {
+    register_rest_route('membrz-post-endpoint', '/membrz-post-endpoint', array(
+        'methods' => 'GET',
+        'callback' => 'handle_membrz_post',
+        'permission_callback' => function () {
+            // Allow requests from any origin
+            //TODO implement it so that it only allows $host 
+            header("Access-Control-Allow-Origin: *");
+            return true;
+        },
+    )); 
+});
+function handle_membrz_post($request){
+    $data = $request->get_body();
+    $data = json_decode($data, true);
 
-    $curl = curl_init($url);
+    $response = array('message' => 'Data arvied succesfully', 'data' => $data);
 
-    $host = get_site_url();
 
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($curl, CURLOPT_HTTPHEADER, [
-        'X-RapidAPI-Host: ' . $host,
-        'Content-Type: application/json'
-    ]);
 
-    $response = curl_exec($curl);
-    curl_close($curl);
-
-    echo $response;
+    return new WP_REST_Response($response, 200);
 }
+
 
 function mb_options_page_html() {
     $post_types = get_post_types();
