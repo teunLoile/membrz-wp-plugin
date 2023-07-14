@@ -16,94 +16,11 @@
  * Domain Path:       /languages
  */
 
- function mb_init_menu(){
-    add_menu_page('Membrz Plugin', 'Membrz Plugin', 'administrator', 'mbr_admin', 'mb_options_page_html');
- }
+include_once __DIR__ . "/api.php";
 
- //TODO: remove after testing
- function mb_create_post_type(){
-    register_post_type('mb_event', array(
-        'public' => true,
-        'show_ui' => true,
-        'show_in_menu' => 'mbr_admin',
-        'show_in_admin_bar ' => true,
-    ));
- }
-
- function mb_add_meta_box(){
-    add_meta_box('mb_box_id', 'Events metabox', 'mb_event_meta_html', 'mb_event');
- }
-
-function mb_event_meta_html($post){
-    $value = get_post_meta($post->ID, 'name');
-    ?> 
-        <div><h3><?=$value?></h3></div>
-    <?php
+function mb_init_menu(){
+   add_menu_page('Membrz Plugin', 'Membrz Plugin', 'administrator', 'mbr_landing', 'mb_options_page_html');
 }
-
- add_action('add_meta_boxes', 'mb_add_meta_box');
-
-function mb_register_custom_post_type_menu(){
-    add_submenu_page('edit.php?=mb_event', 'Events', 'Submenu', 'manage_options', 'events-submenu', 'events_html');
-}
-
-add_action('admin_menu', 'mb_register_custom_post_type_menu');
-
-function events_html(){
-    echo "<h1> Test </h1>";
-}
-
- function mb_activate(){
-    add_option('mb_url_congig');
- }
-
-register_activation_hook(__FILE__, 'mb_activate');
-
-register_uninstall_hook(__FILE__, 'mb_deactivate_plugin');
-
-function mb_deactivate_plugin(){
-    delete_option('mb_url_config');
-}
-
-if($_POST && $url_location = $_POST['mb_dashboard_host']){
-    update_option('mb_url_config', $url_location);  
-}
-
-add_action('rest_api_init', function() {
-    register_rest_route('membrz-post-endpoint', '/membrz-post-endpoint', array(
-        'methods' => 'POST',
-        'callback' => 'handle_membrz_post',
-        'permission_callback' => function () {
-            // Allow requests from any origin
-            //TODO implement it so that it only allows $host 
-            header("Access-Control-Allow-Origin: *");
-            return true;
-        },
-    )); 
-});
-add_action('rest_api_init', function() {
-    register_rest_route('membrz-post-endpoint', '/membrz-post-endpoint', array(
-        'methods' => 'GET',
-        'callback' => 'handle_membrz_post',
-        'permission_callback' => function () {
-            // Allow requests from any origin
-            //TODO implement it so that it only allows $host 
-            header("Access-Control-Allow-Origin: *");
-            return true;
-        },
-    )); 
-});
-function handle_membrz_post($request){
-    $data = $request->get_body();
-    $data = json_decode($data, true);
-
-    $response = array('message' => 'Data arvied succesfully', 'data' => $data);
-
-
-
-    return new WP_REST_Response($response, 200);
-}
-
 
 function mb_options_page_html() {
     $post_types = get_post_types();
@@ -131,7 +48,110 @@ function mb_options_page_html() {
     <?php
 }
 
+add_action('admin_menu', 'mb_init_menu');
+
+ //TODO: remove after testing
+function mb_create_post_type(){
+   register_post_type('mb_event', array(
+       'public' => true,
+       'show_ui' => true,
+       'show_in_menu' => 'mbr_admin',
+       'show_in_admin_bar ' => true,
+       'fields' => array(
+            'image_url' => array(
+                'type' => 'text',
+                'label' => 'Image url',
+            ),
+            'name' => array(
+                'type' => 'text',
+                'label' => 'Name',
+            ),
+            'start_date' => array(
+                'type' => 'date',
+                'label' => 'Start date',
+            ),
+            'end_date' => array(
+                'type' => 'date',
+                'label' => 'End date',
+            ),
+            'begin_time' => array(
+                'type' => 'time',
+                'label' => 'Begin time',
+            ),
+            'end_time' => array(
+                'type' => 'time',
+                'label' => 'End time',
+            ),
+            'location' => array(
+                'type' => 'text',
+                'label' => 'Location',
+            ),
+            'description' => array(
+                'type' => 'text',
+                'label' => 'Description',
+            )
+       )
+   ));
+}
+
+add_action('init', 'mb_create_post_type');
+
+function mb_add_meta_box(){
+   add_meta_box('mb_box_id', 'Events metabox', 'mb_event_meta_html', 'mb_event');
+}
+
+function mb_event_meta_html($post){
+    $value = get_post_meta($post->ID, 'name');
+    ?> 
+        <div><h3><?=$value?></h3></div>
+    <?php
+}
+
+add_action('add_meta_boxes', 'mb_add_meta_box');
+
+function mb_register_custom_post_type_menu(){
+    add_submenu_page('mbr_landing', 'Events', 'Events', 'administrator', 'events-submenu', 'events_html');
+}
+
+add_action('admin_menu', 'mb_register_custom_post_type_menu');
+
+function events_html(){
+    // Query the CPT posts
+    $args = array(
+        'post_type' => 'mb_event', // Replace 'mb_event' with your CPT slug
+        'posts_per_page' => -1 // Retrieve all posts
+    );
+    $posts = new WP_Query($args);
+
+    // Display the posts in the submenu
+    if ($posts->have_posts()) {
+        echo '<h1>Events</h1>';
+        while ($posts->have_posts()) {
+            $posts->the_post();
+            echo '<h2>' . get_the_title() . '</h2>';
+            // Display other post details as needed
+        }
+        wp_reset_postdata();
+    } else {
+        echo '<p>No posts found.</p>';
+    }
+}
+
+function mb_activate(){
+   add_option('mb_url_congig');
+}
+
+register_activation_hook(__FILE__, 'mb_activate');
+
+register_uninstall_hook(__FILE__, 'mb_deactivate_plugin');
+
+function mb_deactivate_plugin(){
+    delete_option('mb_url_config');
+}
+
+if($_POST && $url_location = $_POST['mb_dashboard_host']){
+    update_option('mb_url_config', $url_location);  
+}
 
 
- add_action('admin_menu', 'mb_init_menu');
 ?>
