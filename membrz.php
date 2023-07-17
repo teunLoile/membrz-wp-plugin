@@ -58,6 +58,10 @@ function mb_create_post_type(){
        'show_in_menu' => 'mbr_admin',
        'show_in_admin_bar ' => true,
        'fields' => array(
+            'event_id' => array(
+                'type' => 'NUMERIC',
+                'label' => 'Event Id'
+            ),
             'image_url' => array(
                 'type' => 'text',
                 'label' => 'Image url',
@@ -125,12 +129,14 @@ function events_html(){
 
     // Display the posts in the submenu
     if ($posts->have_posts()) {
+        ?> <div class="post-item"> <?php 
         echo '<h1>Events</h1>';
         while ($posts->have_posts()) {
             $posts->the_post();
             echo '<h2>' . get_the_title() . '</h2>';
             // Display other post details as needed
-        }
+        } 
+        ?> </div> <?php
         wp_reset_postdata();
     } else {
         echo '<p>No posts found.</p>';
