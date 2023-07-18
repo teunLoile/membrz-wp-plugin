@@ -27,18 +27,13 @@ function mb_options_page_html() {
     ?>
     <div class="wrap">
       <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
-      <form action="<?= admin_url('admin.php?page=mbr_admin') ?>" method="post">
+      <form action="<?= admin_url('admin.php?page=mbr_landing') ?>" method="post">
         <div>
         <label for="mb_dashboard_host" >Admininstrator dashboard host url</label> 
         <input type="text" name="mb_dashboard_host" value="<?=get_option('mb_url_config') ? get_option('mb_url_config') : ''?>">
         </div>
         <div>
             <label for="mb_post_location">Target posts to add</label>
-            <select name="mb_post_location" id="select-post-field">
-                <?php foreach($post_types as $post_type) : ?>
-                <option value="<?=$post_type?>"><?=$post_type?></option>
-                <?php endforeach; ?>
-            </select>
         </div>
         <?php
             submit_button('Save Settings');
@@ -100,19 +95,6 @@ function mb_create_post_type(){
 
 add_action('init', 'mb_create_post_type');
 
-function mb_add_meta_box(){
-   add_meta_box('mb_box_id', 'Events metabox', 'mb_event_meta_html', 'mb_event');
-}
-
-function mb_event_meta_html($post){
-    $value = get_post_meta($post->ID, 'name');
-    ?> 
-        <div><h3><?=$value?></h3></div>
-    <?php
-}
-
-add_action('add_meta_boxes', 'mb_add_meta_box');
-
 function mb_register_custom_post_type_menu(){
     add_submenu_page('mbr_landing', 'Events', 'Events', 'administrator', 'events-submenu', 'events_html');
 }
@@ -155,8 +137,8 @@ function mb_deactivate_plugin(){
     delete_option('mb_url_config');
 }
 
-if($_POST && $url_location = $_POST['mb_dashboard_host']){
-    update_option('mb_url_config', $url_location);  
+if($_POST && isset($_POST['mb_dashboard_host'])){
+    update_option('mb_url_config', $_POST['mb_dashboard_host']);  
 }
 
 

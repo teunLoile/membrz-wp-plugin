@@ -1,69 +1,31 @@
 <?php
+//POST route
 add_action('rest_api_init', function() {
+    $access_control_origin = get_option('mb_url_config') ?? '*';
     register_rest_route('membrz-event', '/membrz-post-endpoint', array(
         'methods' => 'POST',
         'callback' => 'handle_membrz_post',
-        'permission_callback' => function () {
-            // Allow requests from any origin
-            //TODO implement it so that it only allows $host 
-            header("Access-Control-Allow-Origin: *");
+        'permission_callback' => function () use ($access_control_origin) {
+            header("Access-Control-Allow-Origin: " . $access_control_origin);
             return true;
         },
     )); 
 });
-
+//PUT / UPDATE route
 add_action('rest_api_init', function() {
-    register_rest_route('membrz-event', '/membrz-post-endpoint', array(
-        'methods' => 'GET',
-        'callback' => 'handle_membrz_post',
-        'permission_callback' => function () {
-            // Allow requests from any origin
-            //TODO implement it so that it only allows $host 
-            header("Access-Control-Allow-Origin: *");
-            return true;
-        },
-    )); 
+    $access_control_origin = get_option('mb_url_config') ??  '*';
 
     register_rest_route('membrz-event', '/membrz-update-endpoint', array(
         'methods' => 'PUT',
         'callback' => 'handle_membrz_update',
-        'permission_callback' => function () {
-            header("Access-Control-Allow-Origin: *");
-            return true;
-        },
-    ));
-    register_rest_route('membrz-event', '/membrz-update-endpoint', array(
-        'methods' => 'GET',
-        'callback' => 'handle_membrz_update_get',
-        'permission_callback' => function () {
-            header("Access-Control-Allow-Origin: *");
+        'permission_callback' => function () use ($access_control_origin) {
+            header("Access-Control-Allow-Origin: " . $access_control_origin);
             return true;
         },
     ));
 });
 
-function handle_membrz_update_get($request){
-    $data = $request->get_body();
-    $data = json_decode($data, true);
-
-    $id_to_find = 49;
-    // Query the post with meta data matching the specified ID
-    $args = array(
-        'post_type' => 'mb_event',  
-        'meta_query' => array(
-            array(
-                'key' => 'event_id', 
-                'value' => $id_to_find
-            )
-        )
-    );
-
-    $posts = new WP_Query($args);
-
-    var_dump($posts);
-}
-
-function handle_membrz_update($request) : WP_REST_Response {
+function handle_membrz_update(WP_REST_Request $request) : WP_REST_Response {
     // Process data
     $data = $request->get_body();
     $data = json_decode($data, true);
@@ -108,7 +70,7 @@ function handle_membrz_update($request) : WP_REST_Response {
     return new WP_REST_Response(['message' => "Updated successfully"], 200);
 }
 
-function handle_membrz_post($request): WP_REST_Response {
+function handle_membrz_post(WP_REST_Request $request): WP_REST_Response {
     $data = $request->get_body();
     $data = json_decode($data, true);
 
