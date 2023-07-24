@@ -91,6 +91,8 @@ function mb_create_post_type(){
             )
        )
    ));
+
+      add_shortcode('mb_event_list', 'mb_display_event_list');
 }
 
 add_action('init', 'mb_create_post_type');
@@ -115,7 +117,8 @@ function events_html(){
         echo '<h1>Events</h1>';
         while ($posts->have_posts()) {
             $posts->the_post();
-            echo '<h2>' . get_the_title() . '</h2>';
+            
+            echo '<a href=' . get_post_permalink() . '><h2>' . get_the_title() . '</h2></a>';
             // Display other post details as needed
         } 
         ?> </div> <?php
@@ -123,6 +126,72 @@ function events_html(){
     } else {
         echo '<p>No posts found.</p>';
     }
+}
+
+// Register custom template for single 'mb_event' posts
+function mb_event_single_template($template) {
+    if (is_singular('mb_event')) {
+        $new_template = plugin_dir_path(__FILE__) . 'single-mb_event.php';
+        if (file_exists($new_template)) {
+            return $new_template;
+        }
+    }
+    return $template;
+}
+add_filter('template_include', 'mb_event_single_template');
+
+function mb_display_event_list($atts){
+    // Shortcode attributes (if you need any)
+    $atts = shortcode_atts(
+        array(
+            'limit' => -1, // Default value to show all events
+        ),
+        $atts
+    );
+
+    // Query the events
+    $args = array(
+        'post_type' => 'mb_event',
+        'posts_per_page' => $atts['limit'],
+    );
+    $events_query = new WP_Query($args);
+
+    // Output the events
+    $output = '<div class="mb-event-list">';
+    if ($events_query->have_posts()) {
+        while ($events_query->have_posts()) {
+            $events_query->the_post();
+            // Get the custom fields for each event
+            $event_id = get_post_meta(get_the_ID(), 'event_id', true);
+            $image_url = get_post_meta(get_the_ID(), 'image_url', true);
+            $name = get_post_meta(get_the_ID(), 'name', true);
+            $start_date = get_post_meta(get_the_ID(), 'start_date', true);
+            $end_date = get_post_meta(get_the_ID(), 'end_date', true);
+            $begin_time = get_post_meta(get_the_ID(), 'begin_time', true);
+            $end_time = get_post_meta(get_the_ID(), 'end_time', true);
+            $location = get_post_meta(get_the_ID(), 'location', true);
+            $description = get_post_meta(get_the_ID(), 'description', true);
+
+            // Build the event output
+            $output .= '<div class="mb-event">';
+            $output .= '<h2>' . $name . '</h2>';
+            $output .= '<p><strong>Event ID:</strong> ' . $event_id . '</p>';
+            $output .= '<img src="' . $image_url . '" alt="' . $name . '">';
+            $output .= '<p><strong>Date:</strong> ' . $start_date . ' to ' . $end_date . '</p>';
+            $output .= '<p><strong>Time:</strong> ' . $begin_time . ' to ' . $end_time . '</p>';
+            $output .= '<p><strong>Location:</strong> ' . $location . '</p>';
+            $output .= '<p><strong>Description:</strong> ' . $description . '</p>';
+            $output .= '</div>';
+        }
+    } else {
+        $output .= '<p>No events found.</p>';
+    }
+    $output .= '</div>';
+
+    // Restore original post data
+    wp_reset_postdata();
+
+    return $output;
 }
 
 function mb_activate(){
