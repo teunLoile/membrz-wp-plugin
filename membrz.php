@@ -152,6 +152,7 @@ function mb_display_event_list($atts){
     // Query the events
     $args = array(
         'post_type' => 'mb_event',
+        'post_status' => array('publish', 'archive'),
         'posts_per_page' => $atts['limit'],
     );
     $events_query = new WP_Query($args);

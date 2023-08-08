@@ -25,6 +25,55 @@ add_action('rest_api_init', function() {
     ));
 });
 
+//DELETE route
+add_action('rest_api_init', function() {
+    //TODO: should not be * when we cant find a configured url might be a security vunerability
+    $access_control_origin = get_option('mb_url_config') ??  '*';
+
+    register_rest_route('membrz-event', '/membrz-delete-endpoint', array(
+        'methods' => 'DELETE',
+        'callback' => 'handle_membrz_delete',
+        'permission_callback' => function () use ($access_control_origin) {
+            header("Access-Control-Allow-Origin: " . $access_control_origin);
+            return true;
+        }
+    ));
+});
+
+function handle_membrz_delete(WP_REST_Request $request) : WP_REST_Response {
+    $data = $request->get_json_params();
+
+    $event_id = $data['event_id'];
+ 
+    if(!$event_id) return new WP_REST_Response('no event id set ', 405);
+ 
+    $args = array(
+        'post_type' => 'mb_event',
+        'meta_query' => array(
+            array(
+                'key' => 'event_id',
+                'value' => $event_id
+            )
+        ),
+    );
+
+    $posts = new WP_Query($args);
+
+    if(!$posts) return new WP_REST_Response('Failed to find post', 405);
+
+    $result = null;
+    if($posts->have_posts()){
+        while($posts->have_posts()){
+            $posts->the_post();
+
+            $result = wp_delete_post(get_the_ID(), true);
+            if($result === false || $result === null) return new WP_REST_Response('Failed to remove post', 405);
+        }
+    }
+
+    return new WP_REST_Response( array("message" => 'Post succesfully removed', 'result' => $result), 202);
+}
+
 function handle_membrz_update(WP_REST_Request $request) : WP_REST_Response {
     // Process data
     $data = $request->get_body();
