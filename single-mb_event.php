@@ -34,7 +34,7 @@ $description = get_post_meta($post->ID, 'description', true);
 
 <div>
     <?php //TODO implement backend cofiguration  ?>
-    <form action="<?= 'http://localhost:5000/api/event/register' ?>" method="POST">
+    <form action="<?= get_option('mb_backend_url') ? get_option('mb_backend_url') : ''  ?>" method="POST">
         <div class="form-input">
             <label for="email">Email</label>
             <input type="text" name="email">

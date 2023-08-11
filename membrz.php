@@ -23,7 +23,6 @@ function mb_init_menu(){
 }
 
 function mb_options_page_html() {
-    $post_types = get_post_types();
     ?>
     <div class="wrap">
       <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
@@ -33,7 +32,8 @@ function mb_options_page_html() {
         <input type="text" name="mb_dashboard_host" value="<?=get_option('mb_url_config') ? get_option('mb_url_config') : ''?>">
         </div>
         <div>
-            <label for="mb_post_location">Target posts to add</label>
+            <label for="mb_backend_url">Enter the backend url</label>
+            <input type="text" name="mb_backend_url" value="<?=get_option('mb_backend_url') ? get_option('mb_backend_url') : ''?>">
         </div>
         <?php
             submit_button('Save Settings');
@@ -209,6 +209,9 @@ function mb_deactivate_plugin(){
 
 if($_POST && isset($_POST['mb_dashboard_host'])){
     update_option('mb_url_config', $_POST['mb_dashboard_host']);  
+}
+if($_POST && isset($_POST['mb_backend_url'])){
+    update_option('mb_backend_url', $_POST['mb_backend_url']);
 }
 
 

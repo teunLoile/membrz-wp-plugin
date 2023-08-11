@@ -87,7 +87,8 @@ function handle_membrz_update(WP_REST_Request $request) : WP_REST_Response {
         'meta_query' => array(
             array(
                 'key' => 'event_id', 
-                'value' => $event_id_to_find 
+                'value' => $event_id_to_find ,
+                'compare' => '=',
             )
         )
     );
@@ -102,12 +103,21 @@ function handle_membrz_update(WP_REST_Request $request) : WP_REST_Response {
         while ($posts->have_posts()) {
             $posts->the_post();
 
+            $post_id = get_the_ID();
+
             // Retrieve the current post data
-            $post_data = get_post(get_the_ID());
+            $post_data = get_post();
 
             // Update the post fields
             $post_data->post_title = $data['name'];
-            $post_data->post_content = '';
+
+            update_post_meta($post_id, 'image_url', $data['image_url']);
+            update_post_meta($post_id, 'start_date', $data['start_date']);
+            update_post_meta($post_id, 'end_date', $data['end_date']);
+            update_post_meta($post_id, 'begin_time', $data['begin_time']);
+            update_post_meta($post_id, 'end_time', $data['end_time']);
+            update_post_meta($post_id, 'location', $data['location']);
+            update_post_meta($post_id, 'description', $data['description']);
 
             // Save the updated post
             wp_update_post($post_data);
