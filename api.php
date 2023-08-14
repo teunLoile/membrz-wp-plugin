@@ -48,7 +48,7 @@ function handle_membrz_delete(WP_REST_Request $request) : WP_REST_Response {
     if(!$event_id) return new WP_REST_Response('no event id set ', 405);
  
     $args = array(
-        'post_type' => 'mb_event',
+        'post_type' => 'events',
         'meta_query' => array(
             array(
                 'key' => 'event_id',
@@ -83,7 +83,7 @@ function handle_membrz_update(WP_REST_Request $request) : WP_REST_Response {
 
     // Query the post with meta data matching the specified ID
     $args = array(
-        'post_type' => 'mb_event',  
+        'post_type' => 'events',  
         'meta_query' => array(
             array(
                 'key' => 'event_id', 
@@ -141,7 +141,7 @@ function handle_membrz_post(WP_REST_Request $request): WP_REST_Response {
 
     $post_data = array(
         'post_title' => $data['name'],
-        'post_type' => 'mb_event',
+        'post_type' => 'events',
         'post_status' => 'publish',
     );
 
