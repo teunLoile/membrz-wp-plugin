@@ -88,7 +88,11 @@ function handle_membrz_update(WP_REST_Request $request): WP_REST_Response
 
     // Query the post with meta data matching the specified ID
     $args = array(
+<<<<<<< HEAD
         'post_type' => 'events',
+=======
+        'post_type' => 'events',  
+>>>>>>> c6dedb64296d41c17cd442e44840b7d01b977dd1
         'meta_query' => array(
             array(
                 'key' => 'event_id',
