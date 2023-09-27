@@ -205,23 +205,6 @@ add_action('rest_api_init', function () {
     ));
 });
 
-add_action('rest_api_init', function () {
-    $access_control_origin = get_option('mb_url_config') ?? '*';
-    register_rest_route('membrz-group', 'membrz-get-endpoint', array(
-        'methods' => 'GET',
-        'callback' => 'handle_membrz_group_get',
-        'permission_callback' => function () use ($access_control_origin) {
-            header("Access-Control-Allow-Origin: " . '*');
-            return true;
-        },
-    ));
-});
-
-function handle_membrz_get_post()
-{
-    echo "hello";
-}
-
 function handle_membrz_group_post(WP_REST_Request $request): WP_REST_Response
 {
     $data = $request->get_body();
@@ -253,6 +236,47 @@ function handle_membrz_group_post(WP_REST_Request $request): WP_REST_Response
         $response->data = "There was an error trying to create this post";
         $response->status = 405;
     }
+
+    return $response;
+}
+
+function handle_membrz_group_delete(WP_REST_Request $request): WP_REST_Response
+{
+    $data = $request->get_body();
+    $data = json_decode($data, true);
+
+    $response = new WP_REST_Response('Succesfully removed group', 200);
+
+    if (!is_array($data)) {
+        $response->data = "ERROR: Data was empty data: " . $data;
+        $response->status = 402;
+        return $response;
+    }
+
+    $group_id = $data['group_id'];
+
+    $args = array(
+        'post_type' => 'mb_groups',
+        'meta_query' => array(
+            array(
+                'key' => 'group_id',
+                'value' => $group_id
+            )
+        ),
+    );
+
+    $post = new WP_Query($args);
+
+    $result = null;
+
+    if ($post->have_posts()) {
+        while ($post->have_posts()) {
+            $post->the_post();
+            $result = wp_delete_post(get_the_ID(), true);
+        }
+    }
+
+    $response->data = $result;
 
     return $response;
 }

@@ -185,6 +185,7 @@ function groups_html()
         while ($posts->have_posts()) {
             $posts->the_post();
             echo '<a href=' . get_post_permalink() . '><h2>' . get_the_title() . '</h2></a>';
+            echo '<p>group id:  ' . get_post_meta(get_the_ID(), 'group_id', true) . '</p>';
         }
 
         wp_reset_postdata();
