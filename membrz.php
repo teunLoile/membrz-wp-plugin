@@ -50,7 +50,6 @@ add_action('admin_menu', 'mb_init_menu');
 //TODO: remove after testing
 function mb_create_post_type()
 {
-<<<<<<< HEAD
     create_events_postype();
     create_groups_postype();
     add_shortcode('mb_event_list', 'mb_display_event_list');
@@ -60,8 +59,6 @@ add_action('init', 'mb_create_post_type');
 
 function create_events_postype()
 {
-=======
->>>>>>> c6dedb64296d41c17cd442e44840b7d01b977dd1
     register_post_type('events', array(
         'public' => true,
         'show_ui' => true,
@@ -106,15 +103,9 @@ function create_events_postype()
             )
         )
     ));
-<<<<<<< HEAD
-=======
-
-    add_shortcode('mb_event_list', 'mb_display_event_list');
->>>>>>> c6dedb64296d41c17cd442e44840b7d01b977dd1
 }
 
 
-<<<<<<< HEAD
 function create_groups_postype()
 {
     register_post_type('mb_groups', array(
@@ -139,8 +130,6 @@ function create_groups_postype()
     ));
 }
 
-=======
->>>>>>> c6dedb64296d41c17cd442e44840b7d01b977dd1
 function mb_register_custom_post_type_menu()
 {
     add_submenu_page('mbr_landing', 'Events', 'Events', 'administrator', 'events-submenu', 'events_html');
@@ -155,7 +144,7 @@ function events_html()
 {
     // Query the CPT posts
     $args = array(
-        'post_type' => 'events', // Replace 'mb_event' with your CPT slug
+        'post_type' => 'mb_event', // Replace 'mb_event' with your CPT slug
         'posts_per_page' => -1 // Retrieve all posts
     );
     $posts = new WP_Query($args);
@@ -164,11 +153,8 @@ function events_html()
     if ($posts->have_posts()) {
     ?> <div class="post-item">
             <?php
-<<<<<<< HEAD
 
 
-=======
->>>>>>> c6dedb64296d41c17cd442e44840b7d01b977dd1
             echo '<h1>Events</h1>';
             while ($posts->have_posts()) {
                 $posts->the_post();
@@ -178,7 +164,6 @@ function events_html()
             }
             ?> </div>
 <?php
-<<<<<<< HEAD
         wp_reset_postdata();
     } else {
         echo '<p>No posts found.</p>';
@@ -202,8 +187,6 @@ function groups_html()
             echo '<a href=' . get_post_permalink() . '><h2>' . get_the_title() . '</h2></a>';
         }
 
-=======
->>>>>>> c6dedb64296d41c17cd442e44840b7d01b977dd1
         wp_reset_postdata();
     }
 }
@@ -211,13 +194,8 @@ function groups_html()
 // Register custom template for single 'mb_event' posts
 function mb_event_single_template($template)
 {
-<<<<<<< HEAD
     if (is_singular('mb_event')) {
         $new_template = plugin_dir_path(__FILE__) . 'single-mb_event.php';
-=======
-    if (is_singular('events')) {
-        $new_template = plugin_dir_path(__FILE__) . 'single-events.php';
->>>>>>> c6dedb64296d41c17cd442e44840b7d01b977dd1
         if (file_exists($new_template)) {
             return $new_template;
         }
@@ -226,7 +204,6 @@ function mb_event_single_template($template)
 }
 add_filter('template_include', 'mb_event_single_template');
 
-<<<<<<< HEAD
 
 // Register custom template for single 'mb_event' posts
 function mb_group_single_template($template)
@@ -241,8 +218,6 @@ function mb_group_single_template($template)
 }
 add_filter('template_include', 'mb_group_single_template');
 
-=======
->>>>>>> c6dedb64296d41c17cd442e44840b7d01b977dd1
 function mb_display_event_list($atts)
 {
     // Shortcode attributes (if you need any)
@@ -255,7 +230,7 @@ function mb_display_event_list($atts)
 
     // Query the events
     $args = array(
-        'post_type' => 'events',
+        'post_type' => 'mb_event',
         'post_status' => array('publish', 'archive'),
         'posts_per_page' => $atts['limit'],
     );
