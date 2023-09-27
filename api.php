@@ -1,6 +1,9 @@
 <?php
+
+//Api Routes events
+
 //POST route
-add_action('rest_api_init', function() {
+add_action('rest_api_init', function () {
     $access_control_origin = get_option('mb_url_config') ?? '*';
     register_rest_route('membrz-event', '/membrz-post-endpoint', array(
         'methods' => 'POST',
@@ -9,10 +12,10 @@ add_action('rest_api_init', function() {
             header("Access-Control-Allow-Origin: " . $access_control_origin);
             return true;
         },
-    )); 
+    ));
 });
 //PUT / UPDATE route
-add_action('rest_api_init', function() {
+add_action('rest_api_init', function () {
     $access_control_origin = get_option('mb_url_config') ??  '*';
 
     register_rest_route('membrz-event', '/membrz-update-endpoint', array(
@@ -26,7 +29,7 @@ add_action('rest_api_init', function() {
 });
 
 //DELETE route
-add_action('rest_api_init', function() {
+add_action('rest_api_init', function () {
     //TODO: should not be * when we cant find a configured url might be a security vunerability
     $access_control_origin = get_option('mb_url_config') ??  '*';
 
@@ -40,15 +43,16 @@ add_action('rest_api_init', function() {
     ));
 });
 
-function handle_membrz_delete(WP_REST_Request $request) : WP_REST_Response {
+function handle_membrz_delete(WP_REST_Request $request): WP_REST_Response
+{
     $data = $request->get_json_params();
 
     $event_id = $data['event_id'];
- 
-    if(!$event_id) return new WP_REST_Response('no event id set ', 405);
- 
+
+    if (!$event_id) return new WP_REST_Response('no event id set ', 405);
+
     $args = array(
-        'post_type' => 'mb_event',
+        'post_type' => 'events',
         'meta_query' => array(
             array(
                 'key' => 'event_id',
@@ -59,22 +63,23 @@ function handle_membrz_delete(WP_REST_Request $request) : WP_REST_Response {
 
     $posts = new WP_Query($args);
 
-    if(!$posts) return new WP_REST_Response('Failed to find post', 405);
+    if (!$posts) return new WP_REST_Response('Failed to find post', 405);
 
     $result = null;
-    if($posts->have_posts()){
-        while($posts->have_posts()){
+    if ($posts->have_posts()) {
+        while ($posts->have_posts()) {
             $posts->the_post();
 
             $result = wp_delete_post(get_the_ID(), true);
-            if($result === false || $result === null) return new WP_REST_Response('Failed to remove post', 405);
+            if ($result === false || $result === null) return new WP_REST_Response('Failed to remove post', 405);
         }
     }
 
-    return new WP_REST_Response( array("message" => 'Post succesfully removed', 'result' => $result), 202);
+    return new WP_REST_Response(array("message" => 'Post succesfully removed', 'result' => $result), 202);
 }
 
-function handle_membrz_update(WP_REST_Request $request) : WP_REST_Response {
+function handle_membrz_update(WP_REST_Request $request): WP_REST_Response
+{
     // Process data
     $data = $request->get_body();
     $data = json_decode($data, true);
@@ -83,11 +88,11 @@ function handle_membrz_update(WP_REST_Request $request) : WP_REST_Response {
 
     // Query the post with meta data matching the specified ID
     $args = array(
-        'post_type' => 'mb_event',  
+        'post_type' => 'events',
         'meta_query' => array(
             array(
-                'key' => 'event_id', 
-                'value' => $event_id_to_find ,
+                'key' => 'event_id',
+                'value' => $event_id_to_find,
                 'compare' => '=',
             )
         )
@@ -129,7 +134,8 @@ function handle_membrz_update(WP_REST_Request $request) : WP_REST_Response {
     return new WP_REST_Response(['message' => "Updated successfully"], 200);
 }
 
-function handle_membrz_post(WP_REST_Request $request): WP_REST_Response {
+function handle_membrz_post(WP_REST_Request $request): WP_REST_Response
+{
     $data = $request->get_body();
     $data = json_decode($data, true);
 
@@ -141,7 +147,7 @@ function handle_membrz_post(WP_REST_Request $request): WP_REST_Response {
 
     $post_data = array(
         'post_title' => $data['name'],
-        'post_type' => 'mb_event',
+        'post_type' => 'events',
         'post_status' => 'publish',
     );
 
@@ -160,6 +166,93 @@ function handle_membrz_post(WP_REST_Request $request): WP_REST_Response {
     return new WP_REST_Response($response, 200);
 }
 
+//Api routes comission a.k.a groups 
+
+add_action('rest_api_init', function () {
+    $access_control_origin = get_option('mb_url_config') ?? '*';
+    register_rest_route('membrz-group', 'membrz-post-endpoint', array(
+        'methods' => 'POST',
+        'callback' => 'handle_membrz_group_post',
+        'permission_callback' => function () use ($access_control_origin) {
+            header("Access-Control-Allow-Origin: " . $access_control_origin);
+            return true;
+        },
+    ));
+});
+
+add_action('rest_api_init', function () {
+    $access_control_origin = get_option('mb_url_config') ?? '*';
+    register_rest_route('membrz-group', 'membrz-update-endpoint', array(
+        'methods' => 'PUT',
+        'callback' => 'handle_membrz_group_update',
+        'permission_callback' => function () use ($access_control_origin) {
+            header("Access-Control-Allow-Origin: " . $access_control_origin);
+            return true;
+        },
+    ));
+});
 
 
-?>
+add_action('rest_api_init', function () {
+    $access_control_origin = get_option('mb_url_config') ?? '*';
+    register_rest_route('membrz-group', 'membrz-delete-endpoint', array(
+        'methods' => 'DELETE',
+        'callback' => 'handle_membrz_group_delete',
+        'permission_callback' => function () use ($access_control_origin) {
+            header("Access-Control-Allow-Origin: " . $access_control_origin);
+            return true;
+        },
+    ));
+});
+
+add_action('rest_api_init', function () {
+    $access_control_origin = get_option('mb_url_config') ?? '*';
+    register_rest_route('membrz-group', 'membrz-get-endpoint', array(
+        'methods' => 'GET',
+        'callback' => 'handle_membrz_group_get',
+        'permission_callback' => function () use ($access_control_origin) {
+            header("Access-Control-Allow-Origin: " . '*');
+            return true;
+        },
+    ));
+});
+
+function handle_membrz_get_post()
+{
+    echo "hello";
+}
+
+function handle_membrz_group_post(WP_REST_Request $request): WP_REST_Response
+{
+    $data = $request->get_body();
+    $data = json_decode($data, true);
+
+    $response = new WP_REST_Response("Succesfully created group", 200);
+
+    if (!is_array($data)) {
+        $response->data = "Data was not set";
+        $response->status = 405;
+        return $response;
+    }
+
+    $post_data = array(
+        'post_title' => $data['name'],
+        'post_type' => 'mb_groups',
+        'post_status' => 'publish'
+    );
+
+    $post_id = wp_insert_post($post_data);
+
+    if ($post_id) {
+        foreach ($data as $key => $value) {
+            if ($key !== 'name') {
+                update_post_meta($post_id, $key, $value);
+            }
+        }
+    } else {
+        $response->data = "There was an error trying to create this post";
+        $response->status = 405;
+    }
+
+    return $response;
+}
