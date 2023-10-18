@@ -143,7 +143,6 @@ function handle_membrz_post(WP_REST_Request $request): WP_REST_Response
         return new WP_REST_Response('Data is not an array');
     }
 
-    $response = array('message' => 'Data arrived successfully', 'data' => $data);
 
     $post_data = array(
         'post_title' => $data['name'],
@@ -153,16 +152,18 @@ function handle_membrz_post(WP_REST_Request $request): WP_REST_Response
 
     $post_id = wp_insert_post($post_data);
 
-    if ($post_id) {
-        foreach ($data as $key => $value) {
-            if ($key !== 'name') {
-                update_post_meta($post_id, $key, $value);
+    if ($post_id === 0) return new WP_REST_Response('Failed to create post', 500);
+
+    foreach ($data as $key => $value) {
+        if ($key !== 'name') {
+            $result = update_post_meta($post_id, $key, $value);
+            if ($result === false) {
+                return new WP_REST_Response('Failed to update post meta field: ' . $key . ' value: ' . $value, 500);
             }
         }
-    } else {
-        return new WP_REST_Response('Failed to create post', 405);
     }
 
+    $response = array('message' => 'Data arrived successfully', 'data' => $data, 'post_id' => $post_id);
     return new WP_REST_Response($response, 200);
 }
 

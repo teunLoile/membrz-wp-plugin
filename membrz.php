@@ -113,20 +113,32 @@ function create_groups_postype()
         'show_ui' => true,
         'show_in_menu' => 'mbr_admin',
         'show_in_admin_bar ' => true,
-        'fields' => array(
-            'group_id' => array(
-                'type' => 'NUMERIC',
-                'label' => 'Event Id'
-            ),
-            'name' => array(
-                'type' => 'text',
-                'label' => 'Name',
-            ),
-            'description' => array(
-                'type' => 'text',
-                'label' => 'Description',
-            )
-        )
+        'supports' => array(
+            'title',
+            'editor',
+            'thumbnail'
+        ),
+    ));
+
+    register_post_meta('mb_groups', 'group_id', array(
+        'type' => 'numeric',
+        'description' => 'Event Id',
+        'single' => true,
+        'show_in_rest' => true,
+    ));
+
+    register_post_meta('mb_groups', 'name', array(
+        'type' => 'text',
+        'description' => 'Name',
+        'single' => true,
+        'show_in_rest' => true,
+    ));
+
+    register_post_meta('mb_groups', 'description', array(
+        'type' => 'text',
+        'description' => 'Description',
+        'single' => true,
+        'show_in_rest' => true,
     ));
 }
 
@@ -144,7 +156,7 @@ function events_html()
 {
     // Query the CPT posts
     $args = array(
-        'post_type' => 'mb_event', // Replace 'mb_event' with your CPT slug
+        'post_type' => 'events', // Replace 'mb_event' with your CPT slug
         'posts_per_page' => -1 // Retrieve all posts
     );
     $posts = new WP_Query($args);
@@ -206,7 +218,7 @@ function mb_event_single_template($template)
 add_filter('template_include', 'mb_event_single_template');
 
 
-// Register custom template for single 'mb_event' posts
+// Register custom template for single 'mb_groups' posts
 function mb_group_single_template($template)
 {
     if (is_singular('mb_group')) {
