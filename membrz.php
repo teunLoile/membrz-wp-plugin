@@ -113,20 +113,32 @@ function create_groups_postype()
         'show_ui' => true,
         'show_in_menu' => 'mbr_admin',
         'show_in_admin_bar ' => true,
-        'fields' => array(
-            'group_id' => array(
-                'type' => 'NUMERIC',
-                'label' => 'Event Id'
-            ),
-            'name' => array(
-                'type' => 'text',
-                'label' => 'Name',
-            ),
-            'description' => array(
-                'type' => 'text',
-                'label' => 'Description',
-            )
-        )
+        'supports' => array(
+            'title',
+            'editor',
+            'thumbnail'
+        ),
+    ));
+
+    register_post_meta('mb_groups', 'group_id', array(
+        'type' => 'numeric',
+        'description' => 'Event Id',
+        'single' => true,
+        'show_in_rest' => true,
+    ));
+
+    register_post_meta('mb_groups', 'name', array(
+        'type' => 'text',
+        'description' => 'Name',
+        'single' => true,
+        'show_in_rest' => true,
+    ));
+
+    register_post_meta('mb_groups', 'description', array(
+        'type' => 'text',
+        'description' => 'Description',
+        'single' => true,
+        'show_in_rest' => true,
     ));
 }
 
@@ -144,7 +156,7 @@ function events_html()
 {
     // Query the CPT posts
     $args = array(
-        'post_type' => 'mb_event', // Replace 'mb_event' with your CPT slug
+        'post_type' => 'events', // Replace 'mb_event' with your CPT slug
         'posts_per_page' => -1 // Retrieve all posts
     );
     $posts = new WP_Query($args);
@@ -153,13 +165,13 @@ function events_html()
     if ($posts->have_posts()) {
     ?> <div class="post-item">
             <?php
-
-
             echo '<h1>Events</h1>';
             while ($posts->have_posts()) {
                 $posts->the_post();
 
                 echo '<a href=' . get_post_permalink() . '><h2>' . get_the_title() . '</h2></a>';
+                echo '<p> post id ' . get_the_ID() .  '</p>';
+                echo '<p> event id ' . get_post_meta(get_the_ID(), 'event_id', true) .  '</p>';
                 // Display other post details as needed
             }
             ?> </div>
@@ -185,6 +197,7 @@ function groups_html()
         while ($posts->have_posts()) {
             $posts->the_post();
             echo '<a href=' . get_post_permalink() . '><h2>' . get_the_title() . '</h2></a>';
+            echo '<p>group id:  ' . get_post_meta(get_the_ID(), 'group_id', true) . '</p>';
         }
 
         wp_reset_postdata();
@@ -205,7 +218,7 @@ function mb_event_single_template($template)
 add_filter('template_include', 'mb_event_single_template');
 
 
-// Register custom template for single 'mb_event' posts
+// Register custom template for single 'mb_groups' posts
 function mb_group_single_template($template)
 {
     if (is_singular('mb_group')) {
