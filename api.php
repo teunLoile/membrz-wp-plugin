@@ -128,7 +128,7 @@ function handle_membrz_update(WP_REST_Request $request): WP_REST_Response
             wp_update_post($post_data);
         }
     } else {
-        return new WP_REST_Response('Post not found', 404);
+        return new WP_REST_Response(['message' => 'Post not found ',  'data' => $data], 404);
     }
 
     return new WP_REST_Response(['message' => "Updated successfully"], 200);
@@ -142,7 +142,6 @@ function handle_membrz_post(WP_REST_Request $request): WP_REST_Response
     if (!is_array($data)) {
         return new WP_REST_Response('Data is not an array');
     }
-
 
     $post_data = array(
         'post_title' => $data['name'],
