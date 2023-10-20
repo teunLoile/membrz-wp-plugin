@@ -165,13 +165,13 @@ function events_html()
     if ($posts->have_posts()) {
     ?> <div class="post-item">
             <?php
-
-
             echo '<h1>Events</h1>';
             while ($posts->have_posts()) {
                 $posts->the_post();
 
                 echo '<a href=' . get_post_permalink() . '><h2>' . get_the_title() . '</h2></a>';
+                echo '<p> post id ' . get_the_ID() .  '</p>';
+                echo '<p> event id ' . get_post_meta(get_the_ID(), 'event_id', true) .  '</p>';
                 // Display other post details as needed
             }
             ?> </div>
