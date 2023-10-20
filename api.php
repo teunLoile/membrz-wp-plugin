@@ -240,6 +240,52 @@ function handle_membrz_group_post(WP_REST_Request $request): WP_REST_Response
     return $response;
 }
 
+function handle_membrz_group_update(WP_REST_Request $request): WP_REST_Response
+{
+    $data = $request->get_body();
+    $data = json_decode($data, true);
+
+    $title = $data['name'];
+    $description = $data['description'];
+    $group_id = $data['group_id'];
+
+    $args = array(
+        'post_type' => 'mb_groups',
+        'meta_query' => array(
+            array(
+                'key' => 'group_id',
+                'value' => $group_id,
+                'compare' => '=',
+            )
+        )
+    );
+
+    $posts = new WP_Query($args);
+
+    $updated = null;
+
+    if ($posts === null) return new WP_REST_Response('no post found : (', 500);
+
+    while ($posts->have_posts()) {
+        $posts->the_post();
+        $post_id = get_the_ID();
+
+        $post_data = array('ID' => $post_id, 'post_title' => $title, 'post_content' => $description);
+
+        $updated = wp_update_post($post_data);
+
+        if (is_wp_error($updated)) {
+            return new WP_REST_Response('Failed to update post: ' . $updated->get_error_message(), 500);
+        }
+    }
+
+    if (!is_array($data)) {
+        return new WP_REST_Response('Data not set', 500);
+    }
+
+    return new WP_REST_Response(array('message' => 'Succesfully updated group', 'data' => $data, 'updated post' => $updated, 'posts' => $posts), 200);
+}
+
 function handle_membrz_group_delete(WP_REST_Request $request): WP_REST_Response
 {
     $data = $request->get_body();
