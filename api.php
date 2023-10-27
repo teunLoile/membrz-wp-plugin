@@ -47,7 +47,7 @@ function handle_membrz_delete(WP_REST_Request $request): WP_REST_Response
 {
     $data = $request->get_json_params();
 
-    $event_id = $data['event_id'];
+    $event_id = $data['membrz_event_id'];
 
     if (!$event_id) return new WP_REST_Response('no event id set ', 405);
 
@@ -55,7 +55,7 @@ function handle_membrz_delete(WP_REST_Request $request): WP_REST_Response
         'post_type' => 'events',
         'meta_query' => array(
             array(
-                'key' => 'event_id',
+                'key' => 'membrz_event_id',
                 'value' => $event_id
             )
         ),
@@ -84,24 +84,36 @@ function handle_membrz_update(WP_REST_Request $request): WP_REST_Response
     $data = $request->get_body();
     $data = json_decode($data, true);
 
-    $event_id_to_find = $data['event_id']; // Get the event ID
+    $title = $data['name'];
+    $description = $data['description'];
+    $start_date = $data['start_date'];
+    $end_date = $data['end_date'];
+    $start_time = $data['begin_time'];
+    $end_time = $data['end_time'];
+    $event_id = $data['membrz_event_id'];
+    $location = $data['location'];
+    $image_url = $data['image_url'];
 
     // Query the post with meta data matching the specified ID
     $args = array(
         'post_type' => 'events',
         'meta_query' => array(
             array(
-                'key' => 'event_id',
-                'value' => $event_id_to_find,
+                'key' => 'membrz_event_id',
+                'value' => $event_id,
                 'compare' => '=',
             )
         )
     );
+
+    // Add this before the WP_Query:
+    error_log('event_id: ' . $event_id);
+    error_log('Query Args: ' . json_encode($args));
+
+    //Retrive post
     $posts = new WP_Query($args);
 
-    if (!$posts) {
-        return new WP_REST_Response('Failed to find post', 405);
-    }
+    if ($posts === null) return new WP_REST_Response('post not found ', 500);
 
     // Check if the post was found
     if ($posts->have_posts()) {
@@ -111,27 +123,27 @@ function handle_membrz_update(WP_REST_Request $request): WP_REST_Response
             $post_id = get_the_ID();
 
             // Retrieve the current post data
-            $post_data = get_post();
-
-            // Update the post fields
-            $post_data->post_title = $data['name'];
-
-            update_post_meta($post_id, 'image_url', $data['image_url']);
-            update_post_meta($post_id, 'start_date', $data['start_date']);
-            update_post_meta($post_id, 'end_date', $data['end_date']);
-            update_post_meta($post_id, 'begin_time', $data['begin_time']);
-            update_post_meta($post_id, 'end_time', $data['end_time']);
-            update_post_meta($post_id, 'location', $data['location']);
-            update_post_meta($post_id, 'description', $data['description']);
+            $post_data = array('ID' => $post_id, 'post_title' => $title, 'post_content' => $description);
 
             // Save the updated post
             wp_update_post($post_data);
+
+            update_post_meta($post_id, 'image_url', $image_url);
+            update_post_meta($post_id, 'start_date', $start_date);
+            update_post_meta($post_id, 'end_date', $end_date);
+            update_post_meta($post_id, 'begin_time', $start_time);
+            update_post_meta($post_id, 'end_time', $end_time);
+            update_post_meta($post_id, 'location', $location);
+            update_post_meta($post_id, 'description', $description);
         }
+
+        wp_reset_postdata();
     } else {
-        return new WP_REST_Response(['message' => 'Post not found ',  'data' => $data], 404);
+        error_log('SQL Error: ' . $posts->request); // Output the SQL query for debugging
+        return new WP_REST_Response(['message' => 'Post not found ',  'data' => $data, 'post req' => $posts->request], 500);
     }
 
-    return new WP_REST_Response(['message' => "Updated successfully"], 200);
+    return new WP_REST_Response(['message' => "Updated successfully", 'post' =>  $posts], 200);
 }
 
 function handle_membrz_post(WP_REST_Request $request): WP_REST_Response

@@ -65,10 +65,6 @@ function create_events_postype()
         'show_in_menu' => 'mbr_admin',
         'show_in_admin_bar ' => true,
         'fields' => array(
-            'event_id' => array(
-                'type' => 'NUMERIC',
-                'label' => 'Event Id'
-            ),
             'image_url' => array(
                 'type' => 'text',
                 'label' => 'Image url',
@@ -103,6 +99,69 @@ function create_events_postype()
             )
         )
     ));
+
+    register_post_meta('events', 'membrz_event_id', array(
+        'type' => 'numeric',
+        'description' => 'Event ID',
+        'single' => true,
+        'show_in_rest' => true,
+    ));
+
+    register_post_meta('events', 'image_url', array(
+        'type' => 'text',
+        'description' => 'Image url',
+        'single' => true,
+        'show_in_rest' => true,
+    ));
+
+    register_post_meta('events', 'name', array(
+        'type' => 'text',
+        'description' => 'Name',
+        'single' => true,
+        'show_in_rest' => true,
+    ));
+
+    register_post_meta('events', 'start_date', array(
+        'type' => 'date',
+        'description' => 'Start url',
+        'single' => true,
+        'show_in_rest' => true,
+    ));
+
+    register_post_meta('events', 'end_date', array(
+        'type' => 'date',
+        'description' => 'End Date',
+        'single' => true,
+        'show_in_rest' => true,
+    ));
+
+    register_post_meta('events', 'begin_time', array(
+        'type' => 'time',
+        'description' => 'Begin time',
+        'single' => true,
+        'show_in_rest' => true,
+    ));
+
+    register_post_meta('events', 'end_time', array(
+        'type' => 'time',
+        'description' => 'Begin time',
+        'single' => true,
+        'show_in_rest' => true,
+    ));
+
+    register_post_meta('events', 'location', array(
+        'type' => 'text',
+        'description' => 'Location',
+        'single' => true,
+        'show_in_rest' => true,
+    ));
+
+    register_post_meta('events', 'description', array(
+        'type' => 'text',
+        'description' => 'Description',
+        'single' => true,
+        'show_in_rest' => true,
+    ));
 }
 
 
@@ -122,7 +181,7 @@ function create_groups_postype()
 
     register_post_meta('mb_groups', 'group_id', array(
         'type' => 'numeric',
-        'description' => 'Event Id',
+        'description' => 'Group Id',
         'single' => true,
         'show_in_rest' => true,
     ));
